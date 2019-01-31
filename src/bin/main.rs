@@ -8,25 +8,24 @@ use blog_os::println;
 #[cfg(not(test))]
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
+    use blog_os::interrupts::PICS;
+
     println!("Hello World{}", "!");
 
     blog_os::gdt::init();
     blog_os::interrupts::init_idt();
 
-    // x86_64::instructions::int3();
-
-    unsafe {
-        *(0xdeadbeef as *mut u64) = 42;
-    }
+    unsafe { PICS.lock().initialize() };
+    x86_64::instructions::interrupts::enable();
 
     println!("It did not crash!");
 
-    loop {}
+    blog_os::hlt_loop();
 }
 
 #[cfg(not(test))]
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
     println!("{}", info);
-    loop {}
+    blog_os::hlt_loop();
 }
