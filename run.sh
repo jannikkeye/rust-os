@@ -1,0 +1,1 @@
+bootimage run --bin main
